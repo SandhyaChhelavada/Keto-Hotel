@@ -8,7 +8,7 @@ services:
     startCommand: "php artisan serve --host=0.0.0.0 --port=10000"
     envVars:
       - key: APP_ENV
-        value: production
+        value: local
       - key: APP_KEY
         sync: false
       - key: DB_HOST
