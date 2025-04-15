@@ -3,7 +3,7 @@ services:
     name: hotel-management-laravel
     env: docker
     plan: free
-    branch: main
+    branch: development
     buildCommand: ""
     startCommand: "php artisan serve --host=0.0.0.0 --port=10000"
     envVars:
@@ -12,10 +12,10 @@ services:
       - key: APP_KEY
         sync: false
       - key: DB_HOST
-        value: localhost
+        value: http://sql12.freesqldatabase.com/
       - key: DB_DATABASE
-        value: hotel
+        value: sql12773405
       - key: DB_USERNAME
-        value: root
+        value: sql12773405
       - key: DB_PASSWORD
-        value: 
+        value: cTbjiggxZR
