@@ -23,13 +23,17 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy project files
+# Copy composer files first and install dependencies
+COPY composer.json composer.lock ./
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
+# Now copy rest of the app
 COPY . .
 
 # Set permissions
 RUN chmod -R 755 /var/www
 
-# Expose Laravel server port
+# Expose Laravel's default serve port
 EXPOSE 8000
 
 # Start Laravel server
