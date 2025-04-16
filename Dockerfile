@@ -1,40 +1,32 @@
-FROM php:8.2-cli
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    curl \
-    git \
-    npm \
-    nodejs \
-    sqlite3
-
-# Install PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
-
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Use official PHP image with necessary extensions
+FROM php:8.1-fpm
 
 # Set working directory
 WORKDIR /var/www
 
-# Copy composer files first and install dependencies
-COPY composer.json composer.lock ./
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git curl zip unzip \
+    libzip-dev libonig-dev libxml2-dev libpng-dev \
+    libjpeg-dev libfreetype6-dev \
+    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl gd
 
-# Now copy rest of the app
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy project files into the container
 COPY . .
 
+# Install PHP dependencies using Composer
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
 # Set permissions
-RUN chmod -R 755 /var/www
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www/storage \
+    && chmod -R 755 /var/www/bootstrap/cache
 
-# Expose Laravel's default serve port
-EXPOSE 8000
+# Expose port
+EXPOSE 9000
 
-# Start Laravel server
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Start PHP-FPM server
+CMD ["php-fpm"]
