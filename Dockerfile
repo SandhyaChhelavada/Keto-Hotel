@@ -1,32 +1,30 @@
-# Use official PHP image with necessary extensions
-FROM php:8.1-fpm
-
-# Set working directory
-WORKDIR /var/www
+FROM php:8.2-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip \
-    libzip-dev libonig-dev libxml2-dev libpng-dev \
-    libjpeg-dev libfreetype6-dev \
-    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl gd
+    libpng-dev libjpeg-dev libonig-dev libxml2-dev zip unzip curl git npm nodejs sqlite3 \
+    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy project files into the container
+# Set working directory
+WORKDIR /var/www
+
+# Copy project files
 COPY . .
 
-# Install PHP dependencies using Composer
+# Set permissions
+RUN chmod -R 755 /var/www
+
+# Install PHP packages
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage \
-    && chmod -R 755 /var/www/bootstrap/cache
+# Generate Laravel APP key (Render can do this too)
+RUN cp .env.example .env && php artisan key:generate
 
-# Expose port
-EXPOSE 9000
+# Laravel uses public directory
+EXPOSE 8000
 
-# Start PHP-FPM server
-CMD ["php-fpm"]
+# Start Laravel server (only for testing — not for real production)
+CMD php artisan serve --host=0.0.0.0 --port=8000
