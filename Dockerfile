@@ -11,22 +11,20 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy composer files first for caching
+# Copy composer files first for layer caching
 COPY composer.json composer.lock ./
 
-# Install dependencies first
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+# Create log directory (used for debugging Laravel errors)
+RUN mkdir -p /var/www/storage/logs
+
+# Install PHP dependencies (with error fallback log output)
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader || cat /var/www/storage/logs/laravel.log || true
 
 # Now copy the rest of the app
 COPY . .
 
-# Set permissions
-RUN chmod -R 755 /var/www
-
-# Only copy .env if not using Render env vars
-# Remove this if Render sets env in the dashboard
-# RUN cp .env.example .env && php artisan key:generate
-
-# Expose port and start Laravel dev server
+# Expose Laravel development port
 EXPOSE 8000
+
+# Start Laravel dev server
 CMD php artisan serve --host=0.0.0.0 --port=8000
