@@ -1,11 +1,11 @@
 services:
   - type: web
-    name: Keto-Hotel
+    name: keto-hotel
     env: docker
     plan: free
-    dockerfilePath: ./Dockerfile
-    buildCommand: ""
-    startCommand: php artisan serve --host=0.0.0.0 --port=8000
+    region: oregon
+    branch: main
+    dockerfilePath: Dockerfile
     envVars:
       - key: APP_ENV
         value: local
